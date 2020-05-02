@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zjx.Dao.ChatRoomDao">
+<!-- 显示用户信息 -->
+    <select id="InquireUserInfo" parameterType="java.lang.String" resultType="UserInfo">
+        select userinfo.* from user_token INNER JOIN userinfo on user_token.U_LoginID = userinfo.U_LoginID where user_token.Token = #{token};
+    </select>
+<!-- 修改用户信息 -->
+    <update id="UpdateUserInfo" parameterType="UserInfo">
+        Update userinfo set U_NickName = #{U_NickName},U_SignaTure = #{U_SignaTure},U_Sex = #{U_Sex},U_Telephone = #{U_Telephone},
+        U_Name = #{U_Name},U_Email = #{U_Email},U_Age = #{U_Age},U_SchoolTag = #{U_SchoolTag} where U_LoginID = #{U_LoginID};
+    </update>
+<!--    修改用户头像-->
+    <update id="UpdateAvatar" >
+        update userinfo set U_Avatar = #{param2}  where U_LoginID = (select U_LoginID from user_token where Token = #{param1});
+    </update>
+    <!-- 修改登录状态 -->
+    <update id="UpdateStateName" >
+        UPDATE userinfo set U_UserStateName = #{param2} where U_LoginID = #{param1};
+    </update>
+<!-- 获取用户的朋友表-->
+    <select id="GetFriendList" parameterType="java.lang.String" resultType="Friends">
+        select friends.* from friends INNER JOIN user_token on user_token.U_LoginID = friends.F_UserID where user_token.Token = #{param1};
+    </select>
+<!--    获取用户的好友账号 -->
+    <select id="GetFriendID" parameterType="java.lang.String" resultType="Friends">
+        select F_UserID,F_Name,F_FriendGroupsName from friends where F_FriendID = #{userid};
+    </select>
+<!--    查询群列表-->
+    <select id="GetGroupList" parameterType="java.lang.String" resultType="GoupListInfo">
+        select user_groupstouser.UG_GroupID, user_groups.UG_Name ,user_groupstouser.UG_GroupNick from user_groupstouser INNER JOIN user_groups
+        on user_groups.UG_ID = user_groupstouser.UG_GroupID where user_groupstouser.UG_UserID = #{param1};
+    </select>
+    <!--    添加好友-->
+    <insert id="AddFriend" parameterType="Friends">
+        insert into friends (F_UserID,F_FriendID,F_Name,F_FriendGroupsName) VALUES(#{F_UserID},#{F_FriendID},#{F_Name},#{F_FriendGroupsName});
+    </insert>
+<!--    删除好友-->
+    <delete id="DeleteFriend" >
+        DELETE FROM friends WHERE F_UserID = #{param1} and F_FriendID = #{param2};
+    </delete>
+<!--    加入群聊-->
+    <insert id="JoinGroupChat" parameterType="User_GroupsToUser">
+        insert into user_groupstouser (UG_UserID,UG_GroupID,UG_GroupNick,UG_CreateTime) VALUES(#{UG_UserID},#{UG_GroupID},#{UG_GroupNick},#{UG_CreateTime});
+    </insert>
+<!--    离开群聊-->
+    <delete id="LeaveGroupChat">
+        DELETE FROM user_groupstouser WHERE UG_UserID = #{param1} and UG_GroupID = #{param2};
+    </delete>
+<!--    新建群聊-->
+    <insert id="AddGroupChat" parameterType="User_Groups">
+        insert into user_groups (UG_ID,UG_Name,UG_CreateTime,UG_AdminID,UG_Notice,UG_Intro) VALUES(#{UG_ID},#{UG_Name},#{UG_CreateTime},#{UG_AdminID},#{UG_Notice},#{UG_Intro});
+    </insert>
+<!--    删除群聊-->
+    <delete id="DeleteGroupChat">
+        DELETE FROM user_groups WHERE UG_ID = #{UG_ID};
+    </delete>
+<!--    好友消息保存-->
+    <insert id="FriendMsgSave" parameterType="Messages">
+        insert into messages (M_FromUserID,M_ToUserID,M_PostMessages,M_Time) VALUES(#{M_FromUserID},#{M_ToUserID},#{M_PostMessages},#{M_Time});
+    </insert>
+<!--    好友消息查询-->
+    <select id="InquireFriendMessage" resultType="Messages">
+        select * from messages where (M_FromUserID = #{param1}  and M_ToUserID = #{param2}) or (M_FromUserID = #{param2}  and M_ToUserID = #{param1});
+    </select>
+<!--    好友消息删除-->
+    <delete id="FriendMsgDelete">
+        DELETE FROM messages WHERE M_FromUserID = #{param1} and M_ToUserID = #{param2} and M_Time = #{param3};
+    </delete>
+<!--    群聊消息保存-->
+    <insert id="GroupMsgSave" parameterType="User_GroupsMSGContent">
+        insert into user_groupsmsgcontent (GM_ID,GM_Content,GM_FromID,GM_FromUName,GM_CreateTime) VALUES(#{GM_ID},#{GM_Content},#{GM_FromID},#{GM_FromUName},#{GM_CreateTime});
+    </insert>
+<!--    群消息查询-->
+    <select id="InquireGroupMessage" resultType="User_GroupsMSGContent">
+        select * from user_groupsmsgcontent where GM_ID = #{param1};
+    </select>
+<!--    群聊消息删除-->
+    <delete id="GroupMsgDelete">
+        DELETE FROM user_groupsmsgcontent WHERE GM_ID = #{param1} and GM_FromID = #{param2} and GM_CreateTime = #{param3};
+    </delete>
+<!--    群里的用户名-->
+    <select id="InquireGroupUserId" parameterType="java.lang.String" resultType="java.lang.String">
+        select UG_UserID from user_groupstouser where UG_GroupID =  #{param1};
+    </select>
+</mapper>

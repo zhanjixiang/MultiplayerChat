@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zjx.Dao.LoginDao">
+    <!--    配置查询所有-->
+    <select id="FindUserById" resultType="java.lang.String">
+        SELECT U_PassWord from UserInfo  where U_LoginID = #{id}
+    </select>
+    <!-- 修改登录状态 -->
+    <update id="UpdateById" >
+        UPDATE userinfo set U_UserStateName = #{param2} where U_LoginID = #{param1};
+    </update>
+
+    <!-- 检测是否存在token值-->
+    <select id="DetectToken" parameterType="java.lang.String" resultType="User_Token">
+        SELECT * FROM user_token where Token = #{token}
+    </select>
+
+    <!--如果token过期修改token和过期日期-->
+    <update id="UpdateToken" parameterType="User_Token">
+        update user_token set Token = #{Token}, ExpireDate = #{ExpireDate}, FreeLogin=#{FreeLogin} where U_LoginID = #{U_LoginID}
+    </update>
+
+    <!--修改过期日期-->
+    <update id="UpdateExpireDate">
+        update user_token set ExpireDate =#{param2} where Token = #{param1};
+    </update>
+</mapper>
